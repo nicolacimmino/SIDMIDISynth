@@ -1,0 +1,106 @@
+// SIDMIDISynth implements a MIDI controllable synthetizer based on an emulated SID.
+//  Copyright (C) 2014 Nicola Cimmino
+//
+//    This program is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation, either version 3 of the License, or
+//    (at your option) any later version.
+//
+//   This program is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with this program.  If not, see http://www.gnu.org/licenses/.
+//
+
+// We make use of the MIDI library (http://arduinomidilib.sourceforge.net)
+#include <MIDI.h>
+#include <midi_Defs.h>
+#include <midi_Message.h>
+#include <midi_Namespace.h>
+#include <midi_Settings.h>
+
+// We make use of SID emulator (http://code.google.com/p/sid-arduino-lib/)
+#include <SID.h>
+
+MIDI_CREATE_DEFAULT_INSTANCE();
+
+SID sid;
+
+void setup()
+{
+  sid.begin();
+  
+  // We don't have comands to setup instruments,
+  // For now we go with a fixed voice.
+  sid.set_register(VOICE1+ATTACKDECAY,9);
+  sid.set_register(VOICE1+SUSTAINRELEASE,0);
+  sid.set_register(VOLUME,15);
+  
+  // Register callbacks for MIDI events.
+  MIDI.setHandleNoteOn(handleNoteOn);
+  MIDI.setHandleNoteOff(handleNoteOff);
+  MIDI.begin();
+    
+}
+
+// This will be invoked by the MIDI library every time we receive
+//  a NoteOn command.
+//
+void handleNoteOn(byte inChannel, byte inNote, byte inVelocity)
+{
+  // We first convert the MIDI note to a frequency and then that
+  //  to the suitable SID registers value.
+  int frequency = getNoteFrequency(inNote);
+  int sidFrequency = 17 * frequency; 
+  sid.set_register(VOICE1+FREQUENCYH,sidFrequency>>8);
+  sid.set_register(VOICE1+FREQUENCYL,sidFrequency&0xFF);
+  
+  // We just gate the note now with a sawtooth, better handling
+  //  will go here when more MIDI commands are implemented.
+  sid.set_register(4,33);
+  delay(100);
+  sid.set_register(4,32);
+     
+}
+
+// This will be invoked by the MIDI library every time we receive
+//  a NoteOff command.
+//
+void handleNoteOff(byte inChannel, byte inNote, byte inVelocity)
+{   
+}
+
+void loop()
+{
+  // Process next MIDI command if any.
+  MIDI.read();
+}
+
+// This is a table used to convert MIDI notes numbers to frequency.
+// This is the first octave (notes 0 to 11). The following octaves
+// can be calculated.
+double note_freq_lookup[] = {
+ 8.1757989156,
+ 8.6619572180, 
+ 9.1770239974, 
+ 9.7227182413, 
+ 10.3008611535, 
+ 10.9133822323, 
+ 11.5623257097, 
+ 12.2498573744, 
+ 12.9782717994, 
+ 13.7500000000, 
+ 14.5676175474,
+ 15.4338531643 };
+
+// Gets the frequency, in Hz, of a note given the MIDI note number.
+double getNoteFrequency(byte note)
+{
+  int octave=floor(note/12);
+  return note_freq_lookup[note%12]*pow(2,octave);  
+}
+
+ 
