@@ -25,11 +25,17 @@
 // We make use of SID emulator (http://code.google.com/p/sid-arduino-lib/)
 #include <SID.h>
 
+// Creates an instance of the MIDI controller.
 MIDI_CREATE_DEFAULT_INSTANCE();
 
+// The SID emulator
 SID sid;
 
+// Amount of voices in this synthetizer
 #define VOICES_COUNT 3
+
+// MIDI channel on which we receive commands.
+#define MIDI_CHANNEL 0
 
 // The currently playing note in each of the voices.
 byte voiceNotes[VOICES_COUNT] = { 0xFF, 0xFF, 0xFF };
@@ -62,6 +68,11 @@ void setup()
 //
 void handleNoteOn(byte inChannel, byte inNote, byte inVelocity)
 {
+  if(channel != MIDI_CHANNEL)
+  {
+    return;
+  }
+  
   // Find a free voice to play this note
   byte voice=0xFF;
   for(int v=0; v<3; v++)
@@ -73,27 +84,59 @@ void handleNoteOn(byte inChannel, byte inNote, byte inVelocity)
     }
   }
   
+  // We run out of voices, ignore note on command
+  if(voice==0xFF)
+  {
+    return;
+  }
   
   // We first convert the MIDI note to a frequency and then that
   //  to the suitable SID registers value.
   int frequency = getNoteFrequency(inNote);
   int sidFrequency = 17 * frequency; 
-  sid.set_register(VOICE1+FREQUENCYH,sidFrequency>>8);
-  sid.set_register(VOICE1+FREQUENCYL,sidFrequency&0xFF);
+  sid.set_register(sidRegistersBase[voice]+FREQUENCYH,sidFrequency>>8);
+  sid.set_register(sidRegistersBase[voice]+FREQUENCYL,sidFrequency&0xFF);
   
-  // We just gate the note now with a sawtooth, better handling
-  //  will go here when more MIDI commands are implemented.
-  sid.set_register(4,33);
-  delay(100);
-  sid.set_register(4,32);
+  // We just gate the note now with a sawtooth for now. We ignore the velocity
+  // (needs to be set in the ADSR envelope as S lavel).
+  sid.set_register(sidRegistersBase[voice]+4,33);
      
+  // Store the note that is being played in this voice.
+  voiceNotes[voice] = inNote;
 }
 
 // This will be invoked by the MIDI library every time we receive
 //  a NoteOff command.
 //
 void handleNoteOff(byte inChannel, byte inNote, byte inVelocity)
-{   
+{ 
+  if(channel != MIDI_CHANNEL)
+  {
+    return;
+  }
+  
+  // Find the voice that is playing this note
+  byte voice=0xFF;
+  for(int v=0; v<3; v++)
+  {
+    if(voiceNotes[voice]==inNote)
+    {
+      voice = v;
+      break;
+    }
+  }
+  
+  // No voice is playing this note.
+  if(voice==0xFF)
+  {
+    return;
+  }
+  
+  // Gate off the voice.
+  sid.set_register(voiceNotes[voice]+4,32);
+  
+  // The voice is now free.
+  voiceNotes[voice] = 0xFF;
 }
 
 void loop()
