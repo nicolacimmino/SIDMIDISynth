@@ -10,3 +10,6 @@ I made use of the SID emulator library: https://code.google.com/p/sid-arduino-li
 The current implementation makes use of MIDI channel 1 and supports up to 3 voices, as this is the amount of generators available in the SID. The syntesizer processes only NoteOn and NoteOff MIDI commands, currently there is a single instrument supported.
 
 Folder SIDMIDISynth contains the Arduino code while SerialMIDISequencer contains a C# Windows application that acts as a sequencer for a given MIDI file and outputs MIDI commands to serial port.
+
+This video shows the prototype in action: http://youtu.be/jMqI9DxzDNc
+
