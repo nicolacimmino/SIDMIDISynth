@@ -35,10 +35,10 @@ SID sid;
 #define VOICES_COUNT 3
 
 // MIDI channel on which we receive commands.
-#define MIDI_CHANNEL 0
+#define MIDI_CHANNEL 1
 
 // The currently playing note in each of the voices.
-byte voiceNotes[VOICES_COUNT] = { 0xFF, 0xFF, 0xFF };
+byte voiceNotes[VOICES_COUNT] = { 0, 0, 0 };
 
 byte sidRegistersBase[VOICES_COUNT] = {VOICE1, VOICE2, VOICE3};
 
@@ -48,11 +48,12 @@ void setup()
   
   // We act as a single polyphonic channel. So we make use of all 3 voices.
   // We don't handle instrument change commands, so we just set here some default
-  // envelope generator settings.
+  // envelope generator settings that are supposed to sound like a piano.
   for(byte v=0; v<VOICES_COUNT; v++)
   {
-    sid.set_register(sidRegistersBase[v]+ATTACKDECAY,9);
-    sid.set_register(sidRegistersBase[v]+SUSTAINRELEASE,0);
+    sid.set_register(sidRegistersBase[v]+PULSEWIDTHREG,0x08); // 50% pulse width
+    sid.set_register(sidRegistersBase[v]+ATTACKDECAY,0x09);   // A=0 D=9
+    sid.set_register(sidRegistersBase[v]+SUSTAINRELEASE,0x00); // S=0 R=0. S level will be set according to MIDI velocity.
   }
   sid.set_register(VOLUME,15);
   
@@ -61,6 +62,10 @@ void setup()
   MIDI.setHandleNoteOff(handleNoteOff);
   MIDI.begin();
     
+  for(byte b=0x30; b<0x38; b++)
+  {
+    getNoteFrequency(b);  
+  }
 }
 
 // This will be invoked by the MIDI library every time we receive
@@ -68,16 +73,22 @@ void setup()
 //
 void handleNoteOn(byte inChannel, byte inNote, byte inVelocity)
 {
-  if(channel != MIDI_CHANNEL)
+  if(inChannel != MIDI_CHANNEL)
   {
     return;
   }
   
-  // Find a free voice to play this note
-  byte voice=0xFF;
-  for(int v=0; v<3; v++)
+  // Alternate mode in MIDI to give noteoff is to pass the note with velocity zero.
+  if(inVelocity==0)
   {
-    if(voiceNotes[voice]==0xFF)
+    handleNoteOff(inChannel, inNote, inVelocity);  
+  }
+  
+  // Find a free voice to play this note
+  byte voice=VOICES_COUNT;
+  for(int v=0; v<VOICES_COUNT; v++)
+  {
+    if(voiceNotes[v]==0)
     {
       voice = v;
       break;
@@ -85,21 +96,22 @@ void handleNoteOn(byte inChannel, byte inNote, byte inVelocity)
   }
   
   // We run out of voices, ignore note on command
-  if(voice==0xFF)
+  if(voice==VOICES_COUNT)
   {
     return;
   }
   
   // We first convert the MIDI note to a frequency and then that
   //  to the suitable SID registers value.
-  int frequency = getNoteFrequency(inNote);
+  double frequency = getNoteFrequency(inNote);
   int sidFrequency = 17 * frequency; 
-  sid.set_register(sidRegistersBase[voice]+FREQUENCYH,sidFrequency>>8);
-  sid.set_register(sidRegistersBase[voice]+FREQUENCYL,sidFrequency&0xFF);
+  sid.set_register(sidRegistersBase[voice]+FREQUENCYL,(sidFrequency>>8)&0xFF);
+  sid.set_register(sidRegistersBase[voice]+FREQUENCYH,sidFrequency&0xFF);
   
-  // We just gate the note now with a sawtooth for now. We ignore the velocity
-  // (needs to be set in the ADSR envelope as S lavel).
-  sid.set_register(sidRegistersBase[voice]+4,33);
+  // We just gate the note now with a sawtooth for now. Velocity, which in MIDI
+  // is from 0 to 127 is mapped to the Sustain Rate of the ADSR envelope (0-15)
+  sid.set_register(sidRegistersBase[voice]+SUSTAINRELEASE,0+((inVelocity>>3)<<4));
+  sid.set_register(sidRegistersBase[voice]+4,65);
      
   // Store the note that is being played in this voice.
   voiceNotes[voice] = inNote;
@@ -110,16 +122,16 @@ void handleNoteOn(byte inChannel, byte inNote, byte inVelocity)
 //
 void handleNoteOff(byte inChannel, byte inNote, byte inVelocity)
 { 
-  if(channel != MIDI_CHANNEL)
+  if(inChannel != MIDI_CHANNEL)
   {
     return;
   }
   
   // Find the voice that is playing this note
-  byte voice=0xFF;
-  for(int v=0; v<3; v++)
+  byte voice=VOICES_COUNT;
+  for(int v=0; v<VOICES_COUNT; v++)
   {
-    if(voiceNotes[voice]==inNote)
+    if(voiceNotes[v]==inNote)
     {
       voice = v;
       break;
@@ -127,16 +139,16 @@ void handleNoteOff(byte inChannel, byte inNote, byte inVelocity)
   }
   
   // No voice is playing this note.
-  if(voice==0xFF)
+  if(voice==VOICES_COUNT)
   {
     return;
   }
   
   // Gate off the voice.
-  sid.set_register(voiceNotes[voice]+4,32);
+  sid.set_register(sidRegistersBase[voice]+4,64);
   
   // The voice is now free.
-  voiceNotes[voice] = 0xFF;
+  voiceNotes[voice] = 0;
 }
 
 void loop()
@@ -165,8 +177,8 @@ double note_freq_lookup[] = {
 // Gets the frequency, in Hz, of a note given the MIDI note number.
 double getNoteFrequency(byte note)
 {
-  int octave=floor(note/12);
-  return note_freq_lookup[note%12]*pow(2,octave);  
+  int octave=floor(((double)(note))/12.0f);
+  return note_freq_lookup[note-(12*octave)]*pow(2,octave); 
 }
 
  
