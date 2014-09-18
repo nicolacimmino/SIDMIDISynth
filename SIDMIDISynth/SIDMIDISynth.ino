@@ -29,14 +29,25 @@ MIDI_CREATE_DEFAULT_INSTANCE();
 
 SID sid;
 
+#define VOICES_COUNT 3
+
+// The currently playing note in each of the voices.
+byte voiceNotes[VOICES_COUNT] = { 0xFF, 0xFF, 0xFF };
+
+byte sidRegistersBase[VOICES_COUNT] = {VOICE1, VOICE2, VOICE3};
+
 void setup()
 {
   sid.begin();
   
-  // We don't have comands to setup instruments,
-  // For now we go with a fixed voice.
-  sid.set_register(VOICE1+ATTACKDECAY,9);
-  sid.set_register(VOICE1+SUSTAINRELEASE,0);
+  // We act as a single polyphonic channel. So we make use of all 3 voices.
+  // We don't handle instrument change commands, so we just set here some default
+  // envelope generator settings.
+  for(byte v=0; v<VOICES_COUNT; v++)
+  {
+    sid.set_register(sidRegistersBase[v]+ATTACKDECAY,9);
+    sid.set_register(sidRegistersBase[v]+SUSTAINRELEASE,0);
+  }
   sid.set_register(VOLUME,15);
   
   // Register callbacks for MIDI events.
@@ -51,6 +62,18 @@ void setup()
 //
 void handleNoteOn(byte inChannel, byte inNote, byte inVelocity)
 {
+  // Find a free voice to play this note
+  byte voice=0xFF;
+  for(int v=0; v<3; v++)
+  {
+    if(voiceNotes[voice]==0xFF)
+    {
+      voice = v;
+      break;
+    }
+  }
+  
+  
   // We first convert the MIDI note to a frequency and then that
   //  to the suitable SID registers value.
   int frequency = getNoteFrequency(inNote);
