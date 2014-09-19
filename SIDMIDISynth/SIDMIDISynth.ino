@@ -108,8 +108,10 @@ void handleNoteOn(byte inChannel, byte inNote, byte inVelocity)
   sid.set_register(sidRegistersBase[voice]+FREQUENCYL,(sidFrequency>>8)&0xFF);
   sid.set_register(sidRegistersBase[voice]+FREQUENCYH,sidFrequency&0xFF);
   
-  // We just gate the note now with a sawtooth for now. Velocity, which in MIDI
+  // We just gate the note with a square wave for now. Velocity, which in MIDI
   // is from 0 to 127 is mapped to the Sustain Rate of the ADSR envelope (0-15)
+  // Note that velocity in MIDI refers to the hardness with which the key was 
+  // struck, so mapping to sustain *LEVEL* is appropriate.
   sid.set_register(sidRegistersBase[voice]+SUSTAINRELEASE,0+((inVelocity>>3)<<4));
   sid.set_register(sidRegistersBase[voice]+4,65);
      
