@@ -24,6 +24,7 @@ using System.Linq;
 using System.Text;
 using Sanford.Multimedia.Midi;
 using System.IO.Ports;
+using System.Threading;
 
 namespace SerialSequencer
 {
@@ -35,11 +36,35 @@ namespace SerialSequencer
         static void Main(string[] args)
         {
             serialPort.BaudRate = 115200;
-            serialPort.NewLine = "\n";
             serialPort.Open();
+
+            /*
+            byte[] midiCommand = {0xF0, 0x3B, 0x01, 0x00, 0x0F, 0xF7 };
+            serialPort.Write(midiCommand, 0, 6);
+
+            midiCommand[3] = 0x01;
+            midiCommand[4] = 0x55;
+            serialPort.Write(midiCommand, 0, 6);
+
+            midiCommand[3] = 0x18;
+            midiCommand[4] = 0x0F;
+            serialPort.Write(midiCommand, 0, 6);
+
+            midiCommand[3] = 0x04;
+            midiCommand[4] = 0x11;
+            serialPort.Write(midiCommand, 0, 6);
+
+
+            Thread.Sleep(1000);
+
+            midiCommand[3] = 0x04;
+            midiCommand[4] = 0x10;
+            serialPort.Write(midiCommand, 0, 6);
             
-            //String filename = @"C:\Users\nicola\Documents\furelise.mid";
-            String filename = @"C:\Users\nicola\Documents\4stagioni.mid";
+            while (true) { }
+            */
+            String filename = @"C:\Users\nicola\Documents\furelise.mid";
+            //String filename = @"C:\Users\nicola\Documents\4stagioni.mid";
             //String filename = @"C:\Users\nicola\Documents\c-major-scale-on-bass-clef.mid";            
 
             sequence.Load(filename);
@@ -59,13 +84,13 @@ namespace SerialSequencer
 
             if (e.Message.Command == ChannelCommand.NoteOn)
             {
-                dataBuffer.Add((byte)e.Message.Command);
+                dataBuffer.Add((byte)(e.Message.Command + e.Message.MidiChannel));
                 dataBuffer.Add((byte)e.Message.Data1);
                 dataBuffer.Add((byte) e.Message.Data2);                
             }
             else if (e.Message.Command == ChannelCommand.NoteOff)
             {
-                dataBuffer.Add((byte)e.Message.Command);
+                dataBuffer.Add((byte)(e.Message.Command+e.Message.MidiChannel));
                 dataBuffer.Add((byte)e.Message.Data1);
                 dataBuffer.Add((byte)e.Message.Data2);
             }
@@ -77,6 +102,7 @@ namespace SerialSequencer
             }
             serialPort.Write(dataBuffer.ToArray<byte>(),0, dataBuffer.Count);
             Console.WriteLine("");
+
 
         }
     }

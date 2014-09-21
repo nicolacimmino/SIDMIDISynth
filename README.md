@@ -11,3 +11,5 @@ The current implementation makes use of MIDI channel 1 and supports up to 3 voic
 
 Folder SIDMIDISynth contains the Arduino code while SerialMIDISequencer contains a C# Windows application that acts as a sequencer for a given MIDI file and outputs MIDI commands to serial port.
 
+This video shows the prototype in action: http://youtu.be/jMqI9DxzDNc
+
