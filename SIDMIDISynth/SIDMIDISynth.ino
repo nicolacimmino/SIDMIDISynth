@@ -51,15 +51,17 @@ void setup()
   // envelope generator settings that are supposed to sound like a piano.
   for(byte v=0; v<VOICES_COUNT; v++)
   {
-    sid.set_register(sidRegistersBase[v]+PULSEWIDTHREG,0x08); // 50% pulse width
+    sid.set_register(sidRegistersBase[v]+PULSEWIDTHREG,0x08); // 50% pulse width, in case we use pulse
     sid.set_register(sidRegistersBase[v]+ATTACKDECAY,0x09);   // A=0 D=9
     sid.set_register(sidRegistersBase[v]+SUSTAINRELEASE,0x00); // S=0 R=0. S level will be set according to MIDI velocity.
+    sid.set_register(sidRegistersBase[v]+4, 16); // Triiangle
   }
   sid.set_register(VOLUME,15);
   
   // Register callbacks for MIDI events.
   MIDI.setHandleNoteOn(handleNoteOn);
   MIDI.setHandleNoteOff(handleNoteOff);
+  MIDI.setHandleSystemExclusive(handleSystemExclusive);
   MIDI.begin();
     
   for(byte b=0x30; b<0x38; b++)
@@ -104,14 +106,15 @@ void handleNoteOn(byte inChannel, byte inNote, byte inVelocity)
   // We first convert the MIDI note to a frequency and then that
   //  to the suitable SID registers value.
   double frequency = getNoteFrequency(inNote);
-  int sidFrequency = 17 * frequency; 
+  int sidFrequency = 17.028408 * frequency; 
   sid.set_register(sidRegistersBase[voice]+FREQUENCYL,(sidFrequency>>8)&0xFF);
   sid.set_register(sidRegistersBase[voice]+FREQUENCYH,sidFrequency&0xFF);
   
-  // We just gate the note now with a sawtooth for now. Velocity, which in MIDI
-  // is from 0 to 127 is mapped to the Sustain Rate of the ADSR envelope (0-15)
+  // Velocity, which in MIDI is from 0 to 127 is mapped to the Sustain Rate of the ADSR envelope (0-15)
   sid.set_register(sidRegistersBase[voice]+SUSTAINRELEASE,0+((inVelocity>>3)<<4));
-  sid.set_register(sidRegistersBase[voice]+4,65);
+  
+  // Gate the geneator
+  sid.set_register(sidRegistersBase[voice]+4,sid.get_register(sidRegistersBase[voice]+4)|0x01);
      
   // Store the note that is being played in this voice.
   voiceNotes[voice] = inNote;
@@ -144,11 +147,26 @@ void handleNoteOff(byte inChannel, byte inNote, byte inVelocity)
     return;
   }
   
-  // Gate off the voice.
-  sid.set_register(sidRegistersBase[voice]+4,64);
+  // Gate off the generator, this will start the release phase and then put the voice off.
+  sid.set_register(sidRegistersBase[voice]+4,sid.get_register(sidRegistersBase[voice]+4)&0xFE);
   
   // The voice is now free.
   voiceNotes[voice] = 0;
+}
+
+// This will be invoked by the MIDI library every time we receive
+//  a System Exclusive command.
+//
+void handleSystemExclusive(byte* array, unsigned int dataSize)
+{
+  // We checke first of all manufacturer ID. These are actually assigned
+  // by NMA and AMEI, so for the purpose of this demo I just made up my own.
+  // The second byte is the command, I just made up here 0x01 to be a
+  // "register write" command to allow direct SID registers manipulation.
+  if(array[1]==0x3B && array[2]==0x01)
+  {
+    sid.set_register(array[3],array[4]);
+  }
 }
 
 void loop()
