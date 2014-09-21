@@ -110,7 +110,14 @@ void handleNoteOn(byte inChannel, byte inNote, byte inVelocity)
   sid.set_register(sidRegistersBase[voice]+FREQUENCYL,(sidFrequency>>8)&0xFF);
   sid.set_register(sidRegistersBase[voice]+FREQUENCYH,sidFrequency&0xFF);
   
+<<<<<<< HEAD
   // Velocity, which in MIDI is from 0 to 127 is mapped to the Sustain Rate of the ADSR envelope (0-15)
+=======
+  // We just gate the note with a square wave for now. Velocity, which in MIDI
+  // is from 0 to 127 is mapped to the Sustain Rate of the ADSR envelope (0-15)
+  // Note that velocity in MIDI refers to the hardness with which the key was 
+  // struck, so mapping to sustain *LEVEL* is appropriate.
+>>>>>>> b5c363a125a4e5fa89d85f711cfe1cf918769d32
   sid.set_register(sidRegistersBase[voice]+SUSTAINRELEASE,0+((inVelocity>>3)<<4));
   
   // Gate the geneator
