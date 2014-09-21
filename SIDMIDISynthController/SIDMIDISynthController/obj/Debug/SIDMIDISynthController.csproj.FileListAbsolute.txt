@@ -1,0 +1,10 @@
+C:\Users\nicola\Documents\git\SIDMIDISynth\SIDMIDISynthController\SIDMIDISynthController\obj\Debug\SIDMIDISynthController.csprojResolveAssemblyReference.cache
+C:\Users\nicola\Documents\git\SIDMIDISynth\SIDMIDISynthController\SIDMIDISynthController\obj\Debug\SIDMIDISynthController.Properties.Resources.resources
+C:\Users\nicola\Documents\git\SIDMIDISynth\SIDMIDISynthController\SIDMIDISynthController\obj\Debug\SIDMIDISynthController.RegisterEditor.resources
+C:\Users\nicola\Documents\git\SIDMIDISynth\SIDMIDISynthController\SIDMIDISynthController\obj\Debug\SIDMIDISynthController.csproj.GenerateResource.Cache
+C:\Users\nicola\Documents\git\SIDMIDISynth\SIDMIDISynthController\SIDMIDISynthController\bin\Debug\SIDMIDISynthController.exe.config
+C:\Users\nicola\Documents\git\SIDMIDISynth\SIDMIDISynthController\SIDMIDISynthController\bin\Debug\SIDMIDISynthController.exe
+C:\Users\nicola\Documents\git\SIDMIDISynth\SIDMIDISynthController\SIDMIDISynthController\bin\Debug\SIDMIDISynthController.pdb
+C:\Users\nicola\Documents\git\SIDMIDISynth\SIDMIDISynthController\SIDMIDISynthController\obj\Debug\SIDMIDISynthController.exe
+C:\Users\nicola\Documents\git\SIDMIDISynth\SIDMIDISynthController\SIDMIDISynthController\obj\Debug\SIDMIDISynthController.pdb
+C:\Users\nicola\Documents\git\SIDMIDISynth\SIDMIDISynthController\SIDMIDISynthController\obj\Debug\SIDMIDISynthController.ControlForm.resources
