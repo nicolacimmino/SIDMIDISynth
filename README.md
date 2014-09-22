@@ -1,3 +1,5 @@
+Hardware
+=============
 
 This Arduino based project emulates a SID sound chip (MOS6581) and uses it to create a polyphonic syntesizer controllable in MIDI over USB. There is a plan for a second iteration in which an actual SID is used.
 
@@ -13,3 +15,13 @@ Folder SIDMIDISynth contains the Arduino code while SerialMIDISequencer contains
 
 This video shows the prototype in action: http://youtu.be/jMqI9DxzDNc
 
+Serial MIDI Sequencer
+=============
+
+SID Controller
+=============
+
+This application offers a GUI to control every sigle SID register. Each register change is sent over the MIDI interface as a System Exclusive message. Below is the screenshot for the control panel of one of the voices.
+
+
+![Controller](Documentation/ControllerScreenshot.png)
