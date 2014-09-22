@@ -35,6 +35,7 @@
             // labelRegisterName
             // 
             this.labelRegisterName.Dock = System.Windows.Forms.DockStyle.Top;
+            this.labelRegisterName.Font = new System.Drawing.Font("Courier New", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelRegisterName.Location = new System.Drawing.Point(0, 0);
             this.labelRegisterName.Name = "labelRegisterName";
             this.labelRegisterName.Size = new System.Drawing.Size(260, 20);
@@ -48,7 +49,6 @@
             this.textregisterValue.Name = "textregisterValue";
             this.textregisterValue.Size = new System.Drawing.Size(260, 26);
             this.textregisterValue.TabIndex = 1;
-            this.textregisterValue.TextChanged += new System.EventHandler(this.textregisterValue_TextChanged);
             this.textregisterValue.Leave += new System.EventHandler(this.textregisterValue_Leave);
             // 
             // RegisterEditor

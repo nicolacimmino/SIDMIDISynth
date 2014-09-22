@@ -67,10 +67,6 @@ void setup()
   MIDI.setHandleControlChange(handleControlChange);
   MIDI.begin();
     
-  for(byte b=0x30; b<0x38; b++)
-  {
-    getNoteFrequency(b);  
-  }
 }
 
 // This will be invoked by the MIDI library every time we receive
@@ -123,7 +119,7 @@ void handleNoteOn(byte inChannel, byte inNote, byte inVelocity)
   
   // Gate the geneator
   sid.set_register(sidRegistersBase[voice]+4,sid.get_register(sidRegistersBase[voice]+4)|0x01);
-     
+  
   // Store the note that is being played in this voice.
   voiceNotes[voice] = inNote;
 }
@@ -158,7 +154,7 @@ void handleNoteOff(byte inChannel, byte inNote, byte inVelocity)
   // Gate off the generator, this will start the release phase and then put the voice off.
   if(!legato)
   {
-    sid.set_register(sidRegistersBase[voice]+4,sid.get_register(sidRegistersBase[voice]+4)&0xFE);
+    sid.set_register(sidRegistersBase[voice]+4,sid.get_register(sidRegistersBase[voice]+4)&0xFE); 
   }
   
   // The voice is now free.

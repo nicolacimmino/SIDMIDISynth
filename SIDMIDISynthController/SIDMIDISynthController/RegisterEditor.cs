@@ -80,20 +80,6 @@ namespace SIDMIDISynthController
 
         }
 
-        private void textregisterValue_TextChanged(object sender, EventArgs e)
-        {
-            try
-            {
-                registerValue = int.Parse(textregisterValue.Text, CultureInfo.InvariantCulture);
-            }
-            catch(FormatException ex)
-            {
-                // User entered text that cannot be parsed to a number, reject the input
-                //  by restoring the last known good value.
-                textregisterValue.Text = registerValue.ToString(CultureInfo.InvariantCulture);
-            }
-        }
-
 
         // Delegate for our value changed event
         public delegate void ChangedEventHandler(object sender);
@@ -113,7 +99,18 @@ namespace SIDMIDISynthController
 
         private void textregisterValue_Leave(object sender, EventArgs e)
         {
-            onChanged();
+            try
+            {
+                registerValue = int.Parse(textregisterValue.Text, CultureInfo.InvariantCulture);
+                onChanged();
+            }
+            catch (FormatException ex)
+            {
+                // User entered text that cannot be parsed to a number, reject the input
+                //  by restoring the last known good value.
+                textregisterValue.Text = registerValue.ToString(CultureInfo.InvariantCulture);
+            }
+           
         }
     }
 }
