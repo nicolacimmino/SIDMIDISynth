@@ -42,6 +42,8 @@ byte voiceNotes[VOICES_COUNT] = { 0, 0, 0 };
 
 byte sidRegistersBase[VOICES_COUNT] = {VOICE1, VOICE2, VOICE3};
 
+bool legato=false;
+
 void setup()
 {
   sid.begin();
@@ -62,6 +64,7 @@ void setup()
   MIDI.setHandleNoteOn(handleNoteOn);
   MIDI.setHandleNoteOff(handleNoteOff);
   MIDI.setHandleSystemExclusive(handleSystemExclusive);
+  MIDI.setHandleControlChange(handleControlChange);
   MIDI.begin();
     
   for(byte b=0x30; b<0x38; b++)
@@ -101,6 +104,11 @@ void handleNoteOn(byte inChannel, byte inNote, byte inVelocity)
   if(voice==VOICES_COUNT)
   {
     return;
+  }
+  
+  if(legato)
+  {
+    sid.set_register(sidRegistersBase[voice]+4,sid.get_register(sidRegistersBase[voice]+4)&0xFE);
   }
   
   // We first convert the MIDI note to a frequency and then that
@@ -148,7 +156,10 @@ void handleNoteOff(byte inChannel, byte inNote, byte inVelocity)
   }
   
   // Gate off the generator, this will start the release phase and then put the voice off.
-  sid.set_register(sidRegistersBase[voice]+4,sid.get_register(sidRegistersBase[voice]+4)&0xFE);
+  if(!legato)
+  {
+    sid.set_register(sidRegistersBase[voice]+4,sid.get_register(sidRegistersBase[voice]+4)&0xFE);
+  }
   
   // The voice is now free.
   voiceNotes[voice] = 0;
@@ -167,6 +178,32 @@ void handleSystemExclusive(byte* array, unsigned int dataSize)
   {
     sid.set_register(array[3],array[4]);
   }
+}
+
+void handleControlChange(byte channel, byte number, byte value)
+{
+  // Legato footswitch 
+  if(number==0x44)
+  {
+    legato=(value>=64);
+  }
+  
+  // Damper pedal. 
+  // When actioned this pedal, in a piano, prevents dampers from stopping the
+  // vibration of the strings when the key is released. We model this with
+  // a longer release so when we gate off the voice for a note off event
+  // the note keeps playing its tail.
+  // This is not like in real life as the limited amount of voices means if
+  // another note on comes we will start playing the new note. It's the closest
+  // we can get with only 3 voices.
+  if(number==0x40)
+  {
+     for(byte v=0; v<VOICES_COUNT; v++)
+    {
+      sid.set_register(sidRegistersBase[v]+SUSTAINRELEASE,(value>=64)?0x00:0x09); // S=0 R=0 or 9 if dumper pedal depressed
+    }
+  }
+  
 }
 
 void loop()
