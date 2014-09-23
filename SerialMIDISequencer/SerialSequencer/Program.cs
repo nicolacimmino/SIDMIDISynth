@@ -38,8 +38,8 @@ namespace SerialSequencer
             serialPort.BaudRate = 115200;
             serialPort.Open();
   
-            String filename = @"C:\Users\nicola\Documents\furelise.mid";
-            //String filename = @"C:\Users\nicola\Documents\4stagioni.mid";
+            //String filename = @"C:\Users\nicola\Documents\furelise.mid";
+            String filename = @"C:\Users\nicola\Documents\4stagioni.mid";
             //String filename = @"C:\Users\nicola\Documents\c-major-scale-on-bass-clef.mid";            
 
             sequence.Load(filename);
