@@ -54,7 +54,7 @@ void setup()
   for(byte v=0; v<VOICES_COUNT; v++)
   {
     sid.set_register(sidRegistersBase[v]+PULSEWIDTHREG,0x08); // 50% pulse width, in case we use pulse
-    sid.set_register(sidRegistersBase[v]+ATTACKDECAY,0x09);   // A=0 D=9
+    sid.set_register(sidRegistersBase[v]+ATTACKDECAY,0x00);   // A=0 D=9
     sid.set_register(sidRegistersBase[v]+SUSTAINRELEASE,0x00); // S=0 R=0. S level will be set according to MIDI velocity.
     sid.set_register(sidRegistersBase[v]+4, 16); // Triiangle
   }
@@ -194,12 +194,11 @@ void handleControlChange(byte channel, byte number, byte value)
   // we can get with only 3 voices.
   if(number==0x40)
   {
-     for(byte v=0; v<VOICES_COUNT; v++)
+    for(byte v=0; v<VOICES_COUNT; v++)
     {
-      sid.set_register(sidRegistersBase[v]+SUSTAINRELEASE,(value>=64)?0x00:0x09); // S=0 R=0 or 9 if dumper pedal depressed
-    }
+      sid.set_register(sidRegistersBase[v]+SUSTAINRELEASE,(value>=64)?0x0F:0x00); // S=0 R=0 or 9 if dumper pedal depressed
+    }  
   }
-  
 }
 
 void loop()
