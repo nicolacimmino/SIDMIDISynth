@@ -55,7 +55,7 @@ void setup()
   {
     sid.set_register(sidRegistersBase[v]+PULSEWIDTHREG,0x08); // 50% pulse width, in case we use pulse
     sid.set_register(sidRegistersBase[v]+ATTACKDECAY,0x00);   // A=0 D=9
-    sid.set_register(sidRegistersBase[v]+SUSTAINRELEASE,0x00); // S=0 R=0. S level will be set according to MIDI velocity.
+    sid.set_register(sidRegistersBase[v]+SUSTAINRELEASE,0xF0); // S=0 R=0. S level will be set according to MIDI velocity.
     sid.set_register(sidRegistersBase[v]+4, 16); // Triiangle
   }
   sid.set_register(VOLUME,15);
@@ -196,7 +196,7 @@ void handleControlChange(byte channel, byte number, byte value)
   {
     for(byte v=0; v<VOICES_COUNT; v++)
     {
-      sid.set_register(sidRegistersBase[v]+SUSTAINRELEASE,(value>=64)?0x0F:0x00); // S=0 R=0 or 9 if dumper pedal depressed
+      sid.set_register(sidRegistersBase[v]+SUSTAINRELEASE,(value>=64)?0xFC:0xF0); // S=0 R=0 or 9 if dumper pedal depressed
     }  
   }
 }
