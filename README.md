@@ -18,6 +18,12 @@ This video shows the prototype in action: http://youtu.be/jMqI9DxzDNc
 Serial MIDI Sequencer
 =============
 
+The serial MIDI sequencer is pretty much a test tool for the SID MIDI Synth. It takes any MIDI file and sequences it through a selected serial port. It currently routes all MIDI commands to MIDI channel 1, so it's not suitable to actually control multiple instruments. Also only Note On, Note Off and Control Change commands are processed at the moment..
+
+![Proto](Documentation/MIDIStreamer.jpg)
+
+
+
 SID Controller
 =============
 
