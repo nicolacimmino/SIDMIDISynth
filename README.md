@@ -9,9 +9,7 @@ The current output quality is not great, after all I have used just an 8 ohm spe
 
 I made use of the SID emulator library: https://code.google.com/p/sid-arduino-lib/ and of the MIDI library: http://playground.arduino.cc/Main/MIDILibrary
 
-The current implementation makes use of MIDI channel 1 and supports up to 3 voices, as this is the amount of generators available in the SID. The following MIDI messages are processed: Note On, Note Off, Control Change (limited to Legato and Damper foot switch), all other messages are ignored.
-
-Folder SIDMIDISynth contains the Arduino code.
+The current implementation makes use of MIDI channel 1 and supports up to 3 voices, as this is the amount of generators available in the SID. The following MIDI messages are processed: Note On, Note Off, Control Change (limited to Legato and Damper foot switch), all other messages are ignored except for System Exclusive messages that are used to control directly SID registers. This last feature is obviusly specific of this implementation and is not meant to work with standard MIDI controllers.
 
 This video shows an early version of the prototype in action: http://youtu.be/jMqI9DxzDNc the out of tune sound was mainly due to innacurate MIDI note frequency conversions.
 
@@ -33,6 +31,10 @@ The Note Off message indicates that the note is to be released. When a Note Off 
 
 Of the Control Change message we process on the Legato Footswitch and the Damper Pedal control messages. If the Legato Footswitch is depressed we simply don't gate off the voice anymore when it becomes free (Note Off) but do so only when the next note is about to be set on that voice. If the Damper Pedal is depressed then we set the decay time of the envelope generator to a rather large value (9 seconds).
 
+###System Exclusive
+
+A System Exclusive message can be sent to control directly single SID registers. An arbitrary value of 0x3B for the manufacturerd ID and 0x01 for the message ID. This is followed by two bytes one for the register number and the second for the register value. This MIDI message type, unfortunately, makes use of a marker (0x7B) to signal the end of the command there is a possibility that a register value will have excatly this value. The most viable workaround is to send the register values in two nibbles so that it's always below 0x10, this change has not been done yet.
+
 Serial MIDI Sequencer
 =============
 
@@ -45,7 +47,12 @@ The serial MIDI sequencer is pretty much a test tool for the SID MIDI Synth. It 
 SID Controller
 =============
 
-This application offers a GUI to control every sigle SID register. Each register change is sent over the MIDI interface as a System Exclusive message. Below is the screenshot for the control panel of one of the voices.
-
+This application offers a GUI to control every sigle SID register. Each register change is sent over the MIDI interface as a System Exclusive message. Below is the screenshot for the control panel of one of the voices. This is also a test application and it's development to a polished application is out of the scope of this project. You will need to adjust source code to match your serial port configuration.
 
 ![Controller](Documentation/ControllerScreenshot.png)
+
+SID File Streamer
+============
+
+This is also a test application. It takes dumps generared by SidDump (http://csdb.dk/release/?id=18501&show=notes#notes) and sends every register change as a MIDI System Exclusive message. This allows to test more complex SID sounds than just single notes from a MIDI file. This application also will not be polished as part of this project, you will need to modify the source to point to your relevant dump file and serial port.
+
