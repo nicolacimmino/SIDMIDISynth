@@ -33,10 +33,10 @@ namespace SIDFileStreamer
                 registersMapping.Add(new Tuple<byte, int>((byte)(1 + (7 * voice)), 10 + (28 * voice)));
                 registersMapping.Add(new Tuple<byte, int>((byte)(2 + (7 * voice)), 33 + (28 * voice)));
                 registersMapping.Add(new Tuple<byte, int>((byte)(3 + (7 * voice)), 31 + (28 * voice)));
-                registersMapping.Add(new Tuple<byte, int>((byte)(4 + (7 * voice)), 24 + (28 * voice)));
                 registersMapping.Add(new Tuple<byte, int>((byte)(5 + (7 * voice)), 27 + (28 * voice)));
                 registersMapping.Add(new Tuple<byte, int>((byte)(6 + (7 * voice)), 29 + (28 * voice)));
-            }
+                registersMapping.Add(new Tuple<byte, int>((byte)(4 + (7 * voice)), 24 + (28 * voice))); // This goes last so gate is processed after setting all parameters.
+            }   
 
             bool headerFound = false;
             long startTime = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
@@ -70,10 +70,6 @@ namespace SIDFileStreamer
                         {
                             byte[] midiCommand = { 0xF0, 0x3B, 0x01, mapEntry.Item1, (byte)value, 0xF7 };
                             serialPort.Write(midiCommand, 0, 6);
-                        }
-                        else
-                        {
-                            int x = 0;
                         }
                     }
                 }
