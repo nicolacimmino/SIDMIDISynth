@@ -4,7 +4,7 @@ The current output quality is not great, but noticebly improved from the first p
 
 ![Proto](Documentation/proto.jpg)
 
-The LEDs at the bottom are, from right to left, for the gate of voices 1 trough 3, the legato foot switch and the damper pedal.
+The LEDs at the tp are, from left to right, for the gate of voices 1 trough 3, the legato foot switch and the damper pedal.
 
 I made use of the SID emulator library: https://code.google.com/p/sid-arduino-lib/ and of the MIDI library: http://playground.arduino.cc/Main/MIDILibrary
 
