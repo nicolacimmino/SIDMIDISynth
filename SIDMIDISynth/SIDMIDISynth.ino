@@ -25,6 +25,14 @@
 // We make use of SID emulator (http://code.google.com/p/sid-arduino-lib/)
 #include <SID.h>
 
+#define DUMPER_PEDAL_LED A0
+#define LEGATO_FOOTSWITCH_LED A1
+#define VOICE1_GATE_LED A5
+#define VOICE2_GATE_LED A4
+#define VOICE3_GATE_LED A3
+
+byte voice_gate_leds[] = { VOICE1_GATE_LED, VOICE2_GATE_LED, VOICE3_GATE_LED };
+
 // Creates an instance of the MIDI controller.
 MIDI_CREATE_DEFAULT_INSTANCE();
 
@@ -66,7 +74,18 @@ void setup()
   MIDI.setHandleSystemExclusive(handleSystemExclusive);
   MIDI.setHandleControlChange(handleControlChange);
   MIDI.begin();
-    
+  
+  pinMode(DUMPER_PEDAL_LED, OUTPUT);
+  digitalWrite(DUMPER_PEDAL_LED, LOW);
+
+  pinMode(LEGATO_FOOTSWITCH_LED, OUTPUT);
+  digitalWrite(LEGATO_FOOTSWITCH_LED, LOW);
+  
+  for(int v=0; v<VOICES_COUNT; v++)
+  {
+    pinMode(voice_gate_leds[v], OUTPUT);
+    digitalWrite(voice_gate_leds[v], LOW);
+  }
 }
 
 // This will be invoked by the MIDI library every time we receive
@@ -122,6 +141,8 @@ void handleNoteOn(byte inChannel, byte inNote, byte inVelocity)
   
   // Store the note that is being played in this voice.
   voiceNotes[voice] = inNote;
+  
+  digitalWrite(voice_gate_leds[voice], HIGH);
 }
 
 // This will be invoked by the MIDI library every time we receive
@@ -159,6 +180,8 @@ void handleNoteOff(byte inChannel, byte inNote, byte inVelocity)
   
   // The voice is now free.
   voiceNotes[voice] = 0;
+  
+  digitalWrite(voice_gate_leds[voice], LOW);
 }
 
 // This will be invoked by the MIDI library every time we receive
@@ -182,6 +205,7 @@ void handleControlChange(byte channel, byte number, byte value)
   if(number==0x44)
   {
     legato=(value>=64);
+    digitalWrite(LEGATO_FOOTSWITCH_LED,legato?HIGH:LOW);
   }
   
   // Damper pedal. 
@@ -197,6 +221,7 @@ void handleControlChange(byte channel, byte number, byte value)
     for(byte v=0; v<VOICES_COUNT; v++)
     {
       sid.set_register(sidRegistersBase[v]+SUSTAINRELEASE,(value>=64)?0xFC:0xF0); // S=0 R=0 or 9 if dumper pedal depressed
+      digitalWrite(DUMPER_PEDAL_LED,(value>=64)?HIGH:LOW);
     }  
   }
 }
