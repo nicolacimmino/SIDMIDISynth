@@ -1,8 +1,10 @@
 This Arduino based project emulates a SID sound chip (MOS6581) and uses it to create a polyphonic syntesizer controllable in MIDI over USB. There is a plan for a second iteration in which an actual SID is used.
 
-The current output quality is not great, after all I have used just an 8 ohm speaker directly connected to a digital pin, so some distortion is expected. A low pass filter and an amplifier to drive the speaker would surely make things better. I was more interested in the code anyhow than designing the rest of the hardware, for now.
+The current output quality is not great, but noticebly improved from the first proto as now I have a low pass filter on the output and I don't drive directly a speaker but use an aplifier. While playing MIDI files the 3 vices prove often to be not enough, tracks should be rearranged to be optimized for the limited amount of voices in SID. When playing SID files with various C64 game music the absence of the SID filders in the emulation is obvious expecially in effects based on the noise generator.
 
 ![Proto](Documentation/proto.jpg)
+
+The LEDs at the tp are, from left to right, for the gate of voices 1 trough 3, the legato foot switch and the damper pedal.
 
 I made use of the SID emulator library: https://code.google.com/p/sid-arduino-lib/ and of the MIDI library: http://playground.arduino.cc/Main/MIDILibrary
 
