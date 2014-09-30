@@ -29,13 +29,13 @@ namespace SIDFileStreamer
             List<Tuple<byte, int>> registersMapping = new List<Tuple<byte, int>>();
             for (int voice = 0; voice < 3; voice++)
             {
+                registersMapping.Add(new Tuple<byte, int>((byte)(4 + (7 * voice)), 24 + (28 * voice)));
                 registersMapping.Add(new Tuple<byte, int>((byte)(0 + (7 * voice)), 12 + (28 * voice))); // Register zero corresponds to position 11 in the file.
                 registersMapping.Add(new Tuple<byte, int>((byte)(1 + (7 * voice)), 10 + (28 * voice)));
                 registersMapping.Add(new Tuple<byte, int>((byte)(2 + (7 * voice)), 33 + (28 * voice)));
                 registersMapping.Add(new Tuple<byte, int>((byte)(3 + (7 * voice)), 31 + (28 * voice)));
                 registersMapping.Add(new Tuple<byte, int>((byte)(5 + (7 * voice)), 27 + (28 * voice)));
                 registersMapping.Add(new Tuple<byte, int>((byte)(6 + (7 * voice)), 29 + (28 * voice)));
-                registersMapping.Add(new Tuple<byte, int>((byte)(4 + (7 * voice)), 24 + (28 * voice))); // This goes last so gate is processed after setting all parameters.
             }   
 
             bool headerFound = false;

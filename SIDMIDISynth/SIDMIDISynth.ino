@@ -101,7 +101,8 @@ void handleNoteOn(byte inChannel, byte inNote, byte inVelocity)
   // Alternate mode in MIDI to give noteoff is to pass the note with velocity zero.
   if(inVelocity==0)
   {
-    handleNoteOff(inChannel, inNote, inVelocity);  
+    handleNoteOff(inChannel, inNote, inVelocity); 
+    return; 
   }
   
   // Find a free voice to play this note

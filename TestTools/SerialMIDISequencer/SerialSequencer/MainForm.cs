@@ -45,23 +45,24 @@ namespace SerialSequencer
 
         private void MainForm_Load(object sender, EventArgs e)
         {
-            if(Registry.GetValue(@"HKEY_CURRENT_USER\SerialMIDIStreamer", "PlayOnStart", "1")=="1"
-                && Registry.GetValue(@"HKEY_CURRENT_USER\SerialMIDIStreamer", "LastFile", "") != "")
+           
+            String serialPortName = (String)Registry.GetValue(@"HKEY_CURRENT_USER\SerialMIDIStreamer", "SerialPort", "");
+            if (serialPortName != "")
+            {
+                if (SerialPort.GetPortNames().Contains<String>(serialPortName))
+                {
+                    populateSerialPortsCombo();
+                    comboSerialPort.Text = serialPortName;
+                }
+            }
+
+            if (((String)Registry.GetValue(@"HKEY_CURRENT_USER\SerialMIDIStreamer", "PlayOnStart", "1")) == "1"
+               && ((String)Registry.GetValue(@"HKEY_CURRENT_USER\SerialMIDIStreamer", "LastFile", "")) != "")
             {
                 playFile((String)Registry.GetValue(@"HKEY_CURRENT_USER\SerialMIDIStreamer", "LastFile", ""));
             }
-
-            String serialPortName = (String)Registry.GetValue(@"HKEY_CURRENT_USER\SerialMIDIStreamer", "SerialPort", "");
-             if(serialPortName!="")
-             {
-                 if(SerialPort.GetPortNames().Contains<String>(serialPortName))
-                 {
-                     comboSerialPort.Text = serialPortName;
-                     populateSerialPortsCombo();
-                     useSerialPort(serialPortName);
-                 }
-             }
         }
+
 
         void sequencer_ChannelMessagePlayed(object sender, ChannelMessageEventArgs e)
         {
@@ -130,7 +131,7 @@ namespace SerialSequencer
                 }
             } while (oneRemoved);
 
-            if(!SerialPort.GetPortNames().Contains<String>((String)selectedItem))
+            if (!SerialPort.GetPortNames().Contains<String>((String)selectedItem))
             {
                 selectedItem = null;
                 comboSerialPort.Text = "";
@@ -150,7 +151,7 @@ namespace SerialSequencer
 
         private void comboSerialPort_SelectedValueChanged(object sender, EventArgs e)
         {
-            useSerialPort(comboSerialPort.Text);  
+            useSerialPort(comboSerialPort.Text);
         }
 
         private void useSerialPort(String serialPortName)
@@ -159,7 +160,11 @@ namespace SerialSequencer
             {
                 serialPort = new SerialPort(serialPortName);
                 serialPort.BaudRate = 115200;
-                serialPort.Close();
+                if (serialPort.IsOpen)
+                {
+                    serialPort.Close();
+                    Thread.Sleep(1000);
+                }
                 serialPort.Open();
                 Registry.SetValue(@"HKEY_CURRENT_USER\SerialMIDIStreamer", "SerialPort", serialPortName);
             }
@@ -203,12 +208,12 @@ namespace SerialSequencer
 
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
         {
-            Registry.SetValue(@"HKEY_CURRENT_USER\SerialMIDIStreamer", "PlayOnStart", checkBoxPlayOnStart.Checked?"1":"0");
+            Registry.SetValue(@"HKEY_CURRENT_USER\SerialMIDIStreamer", "PlayOnStart", checkBoxPlayOnStart.Checked ? "1" : "0");
         }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if(sequencer != null)
+            if (sequencer != null)
             {
                 sequencer.Stop();
             }
